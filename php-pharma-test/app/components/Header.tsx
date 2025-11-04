@@ -2,10 +2,20 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
+import ProductsDropdown from "./ProductsDropdown";
+import ServicesDropdown from "./ServicesDropdown";
+import NewsDropdown from "./NewsDropdown";
+import ContactDropdown from "./ContactDropdown";
 
 export default function Header() {
+  const [showProductsMenu, setShowProductsMenu] = useState(false);
+  const [showServicesMenu, setShowServicesMenu] = useState(false);
+  const [showNewsMenu, setShowNewsMenu] = useState(false);
+  const [showContactMenu, setShowContactMenu] = useState(false);
+
   return (
-    <header className="bg-white shadow-sm">
+    <header className="bg-white shadow-sm relative z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between py-4">
           {/* Logo */}
@@ -26,30 +36,66 @@ export default function Header() {
             >
               About
             </Link>
-            <Link
-              href="/products"
-              className="text-gray-700 hover:text-red-600 text-sm uppercase"
+            <div
+              className="relative"
+              onMouseEnter={() => setShowProductsMenu(true)}
+              onMouseLeave={() => setShowProductsMenu(false)}
             >
-              Products
-            </Link>
-            <Link
-              href="/services"
-              className="text-gray-700 hover:text-red-600 text-sm uppercase"
+              <Link
+                href="/products"
+                className="text-gray-700 hover:text-red-600 text-sm uppercase"
+              >
+                Products
+              </Link>
+
+              {/* Products Dropdown Menu */}
+              {showProductsMenu && <ProductsDropdown />}
+            </div>
+            <div
+              className="relative"
+              onMouseEnter={() => setShowServicesMenu(true)}
+              onMouseLeave={() => setShowServicesMenu(false)}
             >
-              Services
-            </Link>
-            <Link
-              href="/news"
-              className="text-gray-700 hover:text-red-600 text-sm uppercase"
+              <Link
+                href="/services"
+                className="text-gray-700 hover:text-red-600 text-sm uppercase"
+              >
+                Services
+              </Link>
+
+              {/* Services Dropdown Menu */}
+              {showServicesMenu && <ServicesDropdown />}
+            </div>
+            <div
+              className="relative"
+              onMouseEnter={() => setShowNewsMenu(true)}
+              onMouseLeave={() => setShowNewsMenu(false)}
             >
-              News
-            </Link>
-            <Link
-              href="/contact"
-              className="text-gray-700 hover:text-red-600 text-sm uppercase"
+              <Link
+                href="/news"
+                className="text-gray-700 hover:text-red-600 text-sm uppercase"
+              >
+                News
+              </Link>
+
+              {/* News Dropdown Menu */}
+              {showNewsMenu && <NewsDropdown />}
+            </div>
+            <div
+              className="relative"
+              onMouseEnter={() => setShowContactMenu(true)}
+              onMouseLeave={() => setShowContactMenu(false)}
             >
-              Contact
-            </Link>
+              <Link
+                href="/contact"
+                className="text-gray-700 hover:text-red-600 text-sm uppercase"
+              >
+                Contact
+              </Link>
+
+              {/* Contact Dropdown Menu */}
+              {showContactMenu && <ContactDropdown />}
+            </div>
           </nav>
 
           {/* Right side - Phone and Login */}
