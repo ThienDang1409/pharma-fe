@@ -159,9 +159,10 @@ export default function AdminAddNewsPage() {
         setUploadProgress(progress);
       });
 
-      if (result.data && result.data.images && result.data.images[0]) {
-        setFormData((prev) => ({ ...prev, image: result.data.images[0] }));
-        setImagePreview(result.data.images[0]);
+      const imageUrl = result.data?.images?.[0];
+      if (imageUrl) {
+        setFormData((prev) => ({ ...prev, image: imageUrl }));
+        setImagePreview(imageUrl);
       }
     } catch (error) {
       console.error("Error uploading image:", error);
@@ -174,8 +175,9 @@ export default function AdminAddNewsPage() {
   const handleTiptapImageUpload = async (file: File): Promise<string> => {
     try {
       const result = await imageApi.upload(file);
-      if (result.data && result.data.images && result.data.images[0]) {
-        return result.data.images[0];
+      const imageUrl = result.data?.images?.[0];
+      if (imageUrl) {
+        return imageUrl;
       }
       throw new Error("No image URL returned");
     } catch (error) {
