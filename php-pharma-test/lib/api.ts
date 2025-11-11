@@ -230,6 +230,10 @@ export interface Information {
   _id: string;
   name: string;
   slug: string;
+  parentId?: string | null;
+  description?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export const blogApi = {
@@ -279,5 +283,28 @@ export const informationApi = {
   // Get single category by ID
   getById: (id: string) => {
     return http.get<Information>(`/information/${id}`);
+  },
+
+  // Get categories by parent ID
+  getByParentId: (parentId: string) => {
+    return http.get<Information[]>(`/information/parent/${parentId}`);
+  },
+
+  // Create new category
+  create: (data: Omit<Information, "_id" | "createdAt" | "updatedAt">) => {
+    return http.post<Information>("/information", data);
+  },
+
+  // Update category
+  update: (
+    id: string,
+    data: Partial<Omit<Information, "_id" | "createdAt" | "updatedAt">>
+  ) => {
+    return http.put<Information>(`/information/${id}`, data);
+  },
+
+  // Delete category
+  delete: (id: string) => {
+    return http.delete(`/information/${id}`);
   },
 };

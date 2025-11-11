@@ -259,7 +259,7 @@ export default function AdminDashboard() {
             </h2>
             <div className="space-y-3">
               <Link
-                href="/news/add"
+                href="/admin/news/add"
                 className="block w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-center transition-colors"
               >
                 ➕ Add News Article
@@ -275,6 +275,12 @@ export default function AdminDashboard() {
                 className="block w-full px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold text-center transition-colors"
               >
                 ➕ Add Product
+              </Link>
+              <Link
+                href="/admin/categories"
+                className="block w-full px-4 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-semibold text-center transition-colors"
+              >
+                📁 Manage Categories
               </Link>
               <Link
                 href="/test-upload"
