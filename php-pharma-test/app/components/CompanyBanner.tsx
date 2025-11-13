@@ -9,19 +9,27 @@ export default function CompanyBanner() {
           </span>
 
           <p className="text-gray-800 text-lg md:text-xl leading-relaxed">
-            <span className="font-semibold">We are a leading</span>
+            <span className="font-semibold">
+              We are a leading manufacturer of high-value testing equipment for
+              the pharmaceutical, food and cosmetics industry worldwide.
+            </span>
             <br />
-            <span className="font-semibold">manufacturer of high-value</span>
             <br />
-            <span className="font-semibold">testing equipment for the</span>
+            <span className="font-semibold">
+              With over 40 years of experience, we provide innovative solutions
+              that meet the highest quality standards and regulatory
+              requirements.
+            </span>
             <br />
-            <span className="font-semibold">pharmaceutical, food and</span>
             <br />
-            <span className="font-semibold">cosmetics industry</span>
+            <span className="font-semibold">
+              Our precision instruments are trusted by laboratories and
+              manufacturers across the globe, ensuring product quality and
+              safety.
+            </span>
             <br />
-            <span className="font-semibold">worldwide. Made in</span>
             <br />
-            <span className="font-semibold">Germany.</span>
+            <span className="font-semibold">Made in Germany.</span>
           </p>
 
           {/* Right quote */}

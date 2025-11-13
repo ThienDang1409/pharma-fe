@@ -1,5 +1,5 @@
 import Layout from "./components/Layout";
-import HeroSlider from "./components/HeroSlider";
+import BlogSlider from "./components/BlogSlider";
 import CompanyBanner from "./components/CompanyBanner";
 import ProductCategories from "./components/ProductCategories";
 import LatestNews from "./components/LatestNews";
@@ -7,7 +7,7 @@ import LatestNews from "./components/LatestNews";
 export default function Home() {
   return (
     <Layout>
-      <HeroSlider />
+      <BlogSlider />
       <CompanyBanner />
       <ProductCategories />
       <LatestNews />

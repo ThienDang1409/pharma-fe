@@ -95,11 +95,15 @@ export default function Header() {
                   {/* Dropdown Menu */}
                   {hasChildren && openDropdown === category._id && (
                     <div className="absolute left-0 top-full pt-2 w-56 z-50">
-                      <div className="bg-white shadow-lg rounded-lg py-2">
+                      <div className="absolute left-0 bg-white shadow-lg rounded-md min-w-[200px] py-2">
                         {children.map((child) => (
                           <Link
                             key={child._id}
-                            href={`/${category.slug}/${child.slug}`}
+                            href={
+                              category.slug === "news"
+                                ? `/news/category/${child.slug}`
+                                : `/${category.slug}/${child.slug}`
+                            }
                             className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors"
                           >
                             <span className="text-red-600 mr-2">›</span>

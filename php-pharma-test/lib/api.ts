@@ -232,6 +232,7 @@ export interface Information {
   slug: string;
   parentId?: string | null;
   description?: string;
+  image?: string;
   createdAt?: string;
   updatedAt?: string;
 }
