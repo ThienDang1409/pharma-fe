@@ -4,11 +4,21 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { informationApi } from "@/lib/api";
 import type { Information } from "@/lib/api";
+import { useLanguage } from "@/app/context/LanguageContext";
+import enTranslations from "@/locales/en.json";
+import viTranslations from "@/locales/vi.json";
+
+const translations = {
+  en: enTranslations,
+  vi: viTranslations,
+};
 
 export default function ProductCategories() {
+  const { language } = useLanguage();
   const [categories, setCategories] = useState<Information[]>([]);
   const [showAll, setShowAll] = useState(false);
   const [loading, setLoading] = useState(true);
+  const t = translations[language];
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -66,6 +76,16 @@ export default function ProductCategories() {
   return (
     <div className="py-16 bg-white">
       <div className="container mx-auto px-4">
+        {/* Section Title */}
+        <div className="text-center mb-12">
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <div className="h-px bg-gray-300 w-24 md:w-64"></div>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-700">
+              {t.pages.productCategories}
+            </h2>
+            <div className="h-px bg-gray-300 w-24 md:w-64"></div>
+          </div>
+        </div>
         <div className="grid md:grid-cols-2 gap-8">
           {displayedCategories.map((category) => (
             <div
@@ -104,10 +124,10 @@ export default function ProductCategories() {
                     </p>
                   )}
                   <Link
-                    href={`/products/${category.slug}`}
-                    className="bg-red-600 text-white px-8 py-3 rounded hover:bg-red-700 transition-colors font-semibold"
+                    href={`/category/${category.slug}`}
+                    className="bg-primary-900 text-white px-8 py-3 rounded hover:bg-primary-800 transition-colors font-semibold"
                   >
-                    VIEW ALL
+                    {t.pages.viewAll}
                   </Link>
                 </div>
               </div>
@@ -120,9 +140,9 @@ export default function ProductCategories() {
           <div className="flex justify-center mt-12">
             <button
               onClick={() => setShowAll(!showAll)}
-              className="bg-red-600 text-white px-10 py-3 rounded-md hover:bg-red-700 transition-colors font-semibold uppercase tracking-wider"
+              className="border-2 border-primary-900 text-gray-700 px-10 py-3 rounded-md hover:bg-primary-800 hover:text-white transition-colors font-semibold uppercase tracking-wider cursor-pointer "
             >
-              {showAll ? "SHOW LESS" : "READ MORE"}
+              {showAll ? `→ ${t.pages.showLess}` : `→ ${t.pages.readMore}`}
             </button>
           </div>
         )}

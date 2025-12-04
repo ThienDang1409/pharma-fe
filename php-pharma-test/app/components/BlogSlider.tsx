@@ -4,8 +4,16 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
+import { useLanguage } from "@/app/context/LanguageContext";
 import { blogApi } from "@/lib/api";
 import type { Blog } from "@/lib/api";
+import enTranslations from "@/locales/en.json";
+import viTranslations from "@/locales/vi.json";
+
+const translations = {
+  en: enTranslations,
+  vi: viTranslations,
+};
 
 // Import Swiper styles
 import "swiper/css";
@@ -13,8 +21,10 @@ import "swiper/css/pagination";
 import "swiper/css/navigation";
 
 export default function BlogSlider() {
+  const { language } = useLanguage();
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
+  const t = translations[language];
 
   useEffect(() => {
     const fetchLatestBlogs = async () => {
@@ -37,8 +47,8 @@ export default function BlogSlider() {
 
   if (loading) {
     return (
-      <div className="h-[500px] bg-gray-200 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+      <div className="h-[500px] bg-primary-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-900"></div>
       </div>
     );
   }
@@ -48,7 +58,7 @@ export default function BlogSlider() {
   }
 
   return (
-    <div className="relative w-full h-[500px] bg-gray-100">
+    <div className="relative w-full h-[600px] md:h-[700px] bg-gray-700">
       <Swiper
         modules={[Autoplay, Pagination, Navigation]}
         spaceBetween={0}
@@ -84,16 +94,16 @@ export default function BlogSlider() {
 
               {/* Content */}
               <div className="absolute inset-0 flex items-center">
-                <div className="container mx-auto px-4">
-                  <div className="max-w-3xl">
+                <div className="container mx-auto px-4 md:px-8">
+                  <div className="max-w-3xl ml-4 md:ml-12">
                     {/* Title */}
-                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 md:mb-6 leading-tight">
                       {blog.title}
                     </h2>
 
                     {/* Excerpt from first section */}
                     {blog.sections && blog.sections.length > 0 && (
-                      <p className="text-white/90 text-lg mb-8 line-clamp-2">
+                      <p className="text-white/90 text-base md:text-lg mb-6 md:mb-8 line-clamp-2">
                         {blog.sections[0].content
                           ?.replace(/<[^>]*>/g, "")
                           .substring(0, 150)}
@@ -103,10 +113,10 @@ export default function BlogSlider() {
 
                     {/* Read More Button */}
                     <Link
-                      href={`/news/${blog._id}`}
-                      className="inline-block bg-red-600 hover:bg-red-700 text-white font-semibold px-8 py-3 rounded-md transition-colors duration-300 uppercase text-sm tracking-wider"
+                      href={`/blog/${blog.slug}`}
+                      className="inline-block bg-primary-900 hover:bg-primary-800 text-white font-semibold px-6 md:px-8 py-2 md:py-3 rounded-md transition-colors duration-300 uppercase text-sm tracking-wider"
                     >
-                      READ MORE
+                      {t.pages.readMore}
                     </Link>
                   </div>
                 </div>
@@ -114,10 +124,10 @@ export default function BlogSlider() {
 
               {/* Optional: Category badge */}
               {blog.tags && blog.tags.length > 0 && (
-                <div className="absolute top-8 left-8 bg-red-600 text-white px-4 py-2 rounded-md text-sm font-semibold">
+                <div className="absolute top-4 md:top-8 left-4 md:left-8 bg-primary-900 text-white px-3 md:px-4 py-1 md:py-2 rounded-md text-xs md:text-sm font-semibold">
                   {blog.tags[0]}
                 </div>
-              )}
+              )}  
             </div>
           </SwiperSlide>
         ))}
@@ -126,47 +136,48 @@ export default function BlogSlider() {
       <style jsx global>{`
         .swiper-button-next,
         .swiper-button-prev {
-          color: #dc2626 !important;
-          background: rgba(255, 255, 255, 0.95) !important;
-          padding: 20px !important;
+          color: #881a44 !important;
+          background: none !important;
+          padding: 8px !important;
           border-radius: 50% !important;
-          width: 55px !important;
-          height: 55px !important;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+          width: 40px !important;
+          height: 40px !important;
+          box-shadow: none !important;
+          backdrop-filter: none !important;
         }
 
         .swiper-button-next:hover,
         .swiper-button-prev:hover {
-          background: #dc2626 !important;
+          background: rgba(255, 255, 255, 0.1) !important;
           color: white !important;
           transform: scale(1.1);
         }
 
         .swiper-button-next::after,
         .swiper-button-prev::after {
-          font-size: 24px !important;
+          font-size: 20px !important;
           font-weight: 900 !important;
           line-height: 1 !important;
         }
 
         .swiper-button-disabled {
-          opacity: 0.5 !important;
+          opacity: 0.3 !important;
         }
 
         .swiper-pagination-bullet {
           background: white !important;
           opacity: 0.5;
-          width: 12px !important;
-          height: 12px !important;
+          width: 10px !important;
+          height: 10px !important;
         }
 
         .swiper-pagination-bullet-active {
-          background: #dc2626 !important;
+          background: #881a44 !important;
           opacity: 1;
         }
 
         .swiper-pagination {
-          bottom: 30px !important;
+          bottom: 20px !important;
         }
       `}</style>
     </div>

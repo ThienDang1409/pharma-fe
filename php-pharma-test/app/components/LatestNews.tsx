@@ -1,60 +1,113 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { useLanguage } from "@/app/context/LanguageContext";
+import { blogApi, Blog, informationApi } from "@/lib/api";
+import NewsCard from "./NewsCard";
+import enTranslations from "@/locales/en.json";
+import viTranslations from "@/locales/vi.json";
 
-interface NewsArticle {
-  id: number;
-  date: string;
-  title: string;
-  excerpt: string;
-  image: string;
-  featured?: boolean;
-}
+const translations = {
+  en: enTranslations,
+  vi: viTranslations,
+};
 
 export default function LatestNews() {
-  const newsArticles: NewsArticle[] = [
-    {
-      id: 1,
-      date: "18 September 2025",
-      title:
-        "Visit Pharma Test at POWTECH TECHNOPHARM 2025 in Nuremberg from 23-25 September 2025 in hall 10, booth 258!",
-      excerpt:
-        'Visit Pharma Test at POWTECH TECHNOPHARM 2025 in Nuremberg from 23-25 September 2025 in hall 10, booth 258! POWTECH TECHNOPHARM 2025, the "international exhibition for technologies for processing powders, solids and liquids in Europe" in Nuremberg is about to start after a long break. Pharma Test is exhibiting again at POWTECH TECHNOPHARM 2025.',
-      image: "/news-powtech.jpg",
-      featured: true,
-    },
-    {
-      id: 2,
-      date: "22 August 2025",
-      title: "New PTF Line of Tablet Friability Testing Instruments",
-      excerpt: "",
-      image: "/news-ptf.jpg",
-    },
-    {
-      id: 3,
-      date: "9 July 2025",
-      title: "Presenting: Newly Revised PTB 330 Tablet Hardness Tester",
-      excerpt: "",
-      image: "/news-ptb.jpg",
-    },
-    {
-      id: 4,
-      date: "6 June 2025",
-      title:
-        "On/Offline Dissolution System: Amazing Flexibility Yet Accurate Results either Way",
-      excerpt: "",
-      image: "/news-dissolution.jpg",
-    },
-  ];
+  const { language } = useLanguage();
+  const [newsArticles, setNewsArticles] = useState<Blog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const t = translations[language];
+
+  useEffect(() => {
+    fetchLatestNews();
+  }, []);
+
+  const fetchLatestNews = async () => {
+    try {
+      setLoading(true);
+      
+      // First, find the News category
+      const categories = await informationApi.getAll();
+      const newsCategory = categories.find(
+        cat => cat.slug === 'news' || cat.name.toLowerCase().includes('news')
+      );
+      
+      if (!newsCategory) {
+        console.error('News category not found');
+        setNewsArticles([]);
+        return;
+      }
+      
+      // Fetch blogs from News category and all its descendants using blogApi
+      const blogs = await blogApi.getAll({
+        informationId: newsCategory._id,
+        status: 'published'
+      });
+      
+      // Sort by createdAt descending (newest first) and take top 4
+      const sortedBlogs = Array.isArray(blogs) 
+        ? blogs
+            .sort((a, b) => {
+              const dateA = new Date(a.createdAt || 0).getTime();
+              const dateB = new Date(b.createdAt || 0).getTime();
+              return dateB - dateA;
+            })
+            .slice(0, 4)
+        : [];
+      
+      setNewsArticles(sortedBlogs);
+    } catch (error) {
+      console.error('Error fetching latest news:', error);
+      setNewsArticles([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      day: 'numeric', 
+      month: 'long', 
+      year: 'numeric' 
+    });
+  };
+
+  const getExcerpt = (blog: Blog) => {
+    if (!blog.sections || blog.sections.length === 0) return '';
+    const content = blog.sections[0]?.content || '';
+    return content.replace(/<[^>]*>/g, '').substring(0, 200);
+  };
+
+  if (loading) {
+    return (
+      <section>
+        <div className="container mx-auto px-4">
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-primary-600"></div>
+            <p className="mt-4 text-gray-600">{t.pages.loadingLatestNews}</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (newsArticles.length === 0) {
+    return null;
+  }
 
   return (
-    <section className="py-16 bg-gray-50">
+    <section>
       <div className="container mx-auto px-4">
         {/* Section Title */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-4 mb-4">
             <div className="h-px bg-gray-300 w-24 md:w-64"></div>
-            <h2 className="text-3xl md:text-4xl font-bold text-red-600">
-              Latest News
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-700">
+              {t.pages.latestNews}
             </h2>
             <div className="h-px bg-gray-300 w-24 md:w-64"></div>
           </div>
@@ -63,56 +116,49 @@ export default function LatestNews() {
         {/* News Grid */}
         <div className="grid gap-8">
           {/* Featured Article */}
-          <div className="grid md:grid-cols-2 gap-8 bg-white rounded-lg shadow-lg overflow-hidden">
-            <div className="relative h-64 md:h-auto">
-              <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                <span className="text-8xl opacity-30">#️⃣</span>
-              </div>
+          <div className="grid md:grid-cols-2 gap-8 bg-white rounded-lg shadow-lg overflow-hidden group hover:shadow-xl transition-all">
+            <div className="relative h-100  bg-gray-100">
+              {newsArticles[0].image ? (
+                <img
+                  src={newsArticles[0].image}
+                  alt={newsArticles[0].title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+              ) : (
+                <div className="w-full h-full bg-linear-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                  <svg className="w-24 h-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+              )}
             </div>
             <div className="p-6 md:p-8 flex flex-col justify-center">
-              <p className="text-red-600 text-sm mb-2">
-                {newsArticles[0].date}
+              <p className="text-gray-700 text-sm mb-2">
+                {formatDate(newsArticles[0].createdAt)}
               </p>
-              <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">
+              <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 group-hover:text-primary-600 transition-colors">
                 {newsArticles[0].title}
               </h3>
               <p className="text-gray-600 mb-6 line-clamp-4">
-                {newsArticles[0].excerpt}
+                {getExcerpt(newsArticles[0]) || t.pages.noDescription}
               </p>
               <Link
-                href={`/news/${newsArticles[0].id}`}
-                className="text-red-600 hover:text-red-700 font-semibold flex items-center gap-2"
+                href={`/blog/${newsArticles[0].slug}`}
+                className="text-primary-900 hover:text-primary-800 font-semibold flex items-center gap-2"
               >
-                <span>→ Read more</span>
+                <span>→ {t.pages.readMore}</span>
               </Link>
             </div>
           </div>
 
           {/* Regular Articles Grid */}
           <div className="grid md:grid-cols-3 gap-8">
-            {newsArticles.slice(1).map((article) => (
-              <div
-                key={article.id}
-                className="bg-white rounded-lg shadow-lg overflow-hidden group hover:shadow-xl transition-shadow"
-              >
-                <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden">
-                  {article.id === 2 && <div className="text-6xl">🔄</div>}
-                  {article.id === 3 && <div className="text-6xl">💻</div>}
-                  {article.id === 4 && <div className="text-6xl">⚗️</div>}
-                </div>
-                <div className="p-6">
-                  <p className="text-red-600 text-sm mb-2">{article.date}</p>
-                  <h3 className="text-lg font-bold text-gray-800 mb-4 group-hover:text-red-600 transition-colors">
-                    {article.title}
-                  </h3>
-                  <Link
-                    href={`/news/${article.id}`}
-                    className="text-red-600 hover:text-red-700 font-semibold flex items-center gap-2"
-                  >
-                    <span>→ Read more</span>
-                  </Link>
-                </div>
-              </div>
+            {newsArticles.slice(1,4).map((article) => (
+              <NewsCard 
+                key={article._id} 
+                article={article} 
+                formatDate={formatDate} 
+              />
             ))}
           </div>
         </div>
@@ -120,10 +166,10 @@ export default function LatestNews() {
         {/* More News Button */}
         <div className="text-center mt-12">
           <Link
-            href="/news"
-            className="inline-flex items-center gap-2 border-2 border-gray-300 text-gray-700 px-8 py-3 rounded hover:border-red-600 hover:text-red-600 transition-all font-semibold"
+            href="/category/news"
+            className="inline-flex items-center gap-2 border-2 border-primary-900 text-gray-700 px-8 py-3 rounded hover:bg-primary-800 hover:text-white transition-all font-semibold"
           >
-            <span>→ MORE NEWS</span>
+            <span>→ {t.pages.moreNews}</span>
           </Link>
         </div>
       </div>

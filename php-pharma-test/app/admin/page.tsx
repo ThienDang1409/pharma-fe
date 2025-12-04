@@ -1,378 +1,254 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { informationApi, blogApi, Information } from "@/lib/api";
 
 export default function AdminDashboard() {
-  const [stats] = useState({
-    totalNews: 48,
-    totalEvents: 12,
-    totalProducts: 156,
-    totalUsers: 24,
-    pendingApprovals: 5,
-    recentUploads: 23,
+  const [stats, setStats] = useState({
+    totalCategories: 0,
+    totalBlogs: 0,
+    publishedBlogs: 0,
+    draftBlogs: 0,
   });
+  const [categories, setCategories] = useState<Information[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const recentActivity = [
-    {
-      id: 1,
-      type: "news",
-      action: "created",
-      title: "New Product Launch Announcement",
-      user: "Admin",
-      time: "2 hours ago",
-    },
-    {
-      id: 2,
-      type: "event",
-      action: "updated",
-      title: "analytica 2026 Event Details",
-      user: "Editor",
-      time: "5 hours ago",
-    },
-    {
-      id: 3,
-      type: "news",
-      action: "deleted",
-      title: "Old Press Release",
-      user: "Admin",
-      time: "1 day ago",
-    },
-    {
-      id: 4,
-      type: "product",
-      action: "created",
-      title: "PTWS 1420 Dissolution Tester",
-      user: "Manager",
-      time: "2 days ago",
-    },
-    {
-      id: 5,
-      type: "event",
-      action: "created",
-      title: "ACHEMA 2026 Registration",
-      user: "Editor",
-      time: "3 days ago",
-    },
-  ];
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-  const getActionColor = (action: string) => {
-    switch (action) {
-      case "created":
-        return "text-green-600 bg-green-50";
-      case "updated":
-        return "text-blue-600 bg-blue-50";
-      case "deleted":
-        return "text-red-600 bg-red-50";
-      default:
-        return "text-gray-600 bg-gray-50";
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+
+      // Fetch categories
+      const categoriesData = await informationApi.getAll();
+      setCategories(categoriesData || []);
+
+      // Fetch blogs
+      const blogsData = await blogApi.getAll();
+      const rootCategories = (categoriesData || []).filter(
+        (cat) => !cat.parentId || cat.parentId === null || cat.parentId === "null"
+      );
+
+      const publishedCount = (blogsData || []).filter(
+        (b) => b.status === "published"
+      ).length;
+      const draftCount = (blogsData || []).filter(
+        (b) => b.status === "draft"
+      ).length;
+
+      setStats({
+        totalCategories: rootCategories.length,
+        totalBlogs: blogsData?.length || 0,
+        publishedBlogs: publishedCount,
+        draftBlogs: draftCount,
+      });
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "news":
-        return "📰";
-      case "event":
-        return "📅";
-      case "product":
-        return "📦";
-      default:
-        return "📄";
-    }
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <header className="bg-white shadow-md">
-        <div className="container mx-auto px-4 py-4">
+    <div className="space-y-6">
+      {/* Page Title */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
+        <p className="text-gray-600 mt-1">Tổng quan quản lý nội dung</p>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Total Categories */}
+        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-primary-600">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-bold text-gray-800">
-                Admin Dashboard
-              </h1>
-              <span className="px-3 py-1 bg-red-600 text-white text-xs font-semibold rounded-full">
-                ADMIN
-              </span>
+            <div>
+              <p className="text-gray-600 text-sm font-medium">Danh mục</p>
+              <p className="text-3xl font-bold text-gray-800 mt-2">
+                {stats.totalCategories}
+              </p>
             </div>
-            <div className="flex items-center gap-4">
-              <Link
-                href="/"
-                className="text-gray-600 hover:text-gray-800 font-medium"
-              >
-                View Site
-              </Link>
-              <button className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg font-semibold">
-                Logout
-              </button>
-            </div>
+            <div className="text-5xl">📁</div>
           </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {/* Total News */}
-          <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Total News</p>
-                <p className="text-3xl font-bold text-gray-800 mt-2">
-                  {stats.totalNews}
-                </p>
-              </div>
-              <div className="text-5xl">📰</div>
-            </div>
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <Link
-                href="/admin/news"
-                className="text-blue-600 hover:text-blue-800 text-sm font-semibold"
-              >
-                Manage News →
-              </Link>
-            </div>
-          </div>
-
-          {/* Total Events */}
-          <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">
-                  Total Events
-                </p>
-                <p className="text-3xl font-bold text-gray-800 mt-2">
-                  {stats.totalEvents}
-                </p>
-              </div>
-              <div className="text-5xl">📅</div>
-            </div>
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <Link
-                href="/admin/events"
-                className="text-blue-600 hover:text-blue-800 text-sm font-semibold"
-              >
-                Manage Events →
-              </Link>
-            </div>
-          </div>
-
-          {/* Total Products */}
-          <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">
-                  Total Products
-                </p>
-                <p className="text-3xl font-bold text-gray-800 mt-2">
-                  {stats.totalProducts}
-                </p>
-              </div>
-              <div className="text-5xl">📦</div>
-            </div>
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <Link
-                href="/admin/products"
-                className="text-blue-600 hover:text-blue-800 text-sm font-semibold"
-              >
-                Manage Products →
-              </Link>
-            </div>
-          </div>
-
-          {/* Total Users */}
-          <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Total Users</p>
-                <p className="text-3xl font-bold text-gray-800 mt-2">
-                  {stats.totalUsers}
-                </p>
-              </div>
-              <div className="text-5xl">👥</div>
-            </div>
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <Link
-                href="/admin/users"
-                className="text-blue-600 hover:text-blue-800 text-sm font-semibold"
-              >
-                Manage Users →
-              </Link>
-            </div>
-          </div>
-
-          {/* Pending Approvals */}
-          <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow border-2 border-orange-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">
-                  Pending Approvals
-                </p>
-                <p className="text-3xl font-bold text-orange-600 mt-2">
-                  {stats.pendingApprovals}
-                </p>
-              </div>
-              <div className="text-5xl">⏳</div>
-            </div>
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <Link
-                href="/admin/approvals"
-                className="text-orange-600 hover:text-orange-800 text-sm font-semibold"
-              >
-                View Pending →
-              </Link>
-            </div>
-          </div>
-
-          {/* Recent Uploads */}
-          <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">
-                  Recent Uploads
-                </p>
-                <p className="text-3xl font-bold text-gray-800 mt-2">
-                  {stats.recentUploads}
-                </p>
-              </div>
-              <div className="text-5xl">🖼️</div>
-            </div>
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <Link
-                href="/admin/uploads"
-                className="text-blue-600 hover:text-blue-800 text-sm font-semibold"
-              >
-                View Uploads →
-              </Link>
-            </div>
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <Link
+              href="/admin/information"
+              className="text-primary-600 hover:text-primary-800 text-sm font-semibold"
+            >
+              Quản lý →
+            </Link>
           </div>
         </div>
 
-        {/* Quick Actions & Recent Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Quick Actions */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
-              Quick Actions
-            </h2>
-            <div className="space-y-3">
-              <Link
-                href="/admin/news/add"
-                className="block w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-center transition-colors"
-              >
-                ➕ Add News Article
-              </Link>
-              <Link
-                href="/admin/events/add"
-                className="block w-full px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold text-center transition-colors"
-              >
-                ➕ Add Event
-              </Link>
-              <Link
-                href="/admin/products/add"
-                className="block w-full px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold text-center transition-colors"
-              >
-                ➕ Add Product
-              </Link>
-              <Link
-                href="/admin/categories"
-                className="block w-full px-4 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-semibold text-center transition-colors"
-              >
-                📁 Manage Categories
-              </Link>
-              <Link
-                href="/test-upload"
-                className="block w-full px-4 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-semibold text-center transition-colors"
-              >
-                🖼️ Upload Images
-              </Link>
-              <Link
-                href="/admin/settings"
-                className="block w-full px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold text-center transition-colors"
-              >
-                ⚙️ Settings
-              </Link>
+        {/* Total Blogs */}
+        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-600">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-600 text-sm font-medium">Tổng bài viết</p>
+              <p className="text-3xl font-bold text-gray-800 mt-2">
+                {stats.totalBlogs}
+              </p>
             </div>
+            <div className="text-5xl">📰</div>
           </div>
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <Link
+              href="/admin/blogs"
+              className="text-blue-600 hover:text-blue-800 text-sm font-semibold"
+            >
+              Quản lý →
+            </Link>
+          </div>
+        </div>
 
-          {/* Recent Activity */}
-          <div className="lg:col-span-2 bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
-              Recent Activity
-            </h2>
-            <div className="space-y-3">
-              {recentActivity.map((activity) => (
+        {/* Published Blogs */}
+        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-600">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-600 text-sm font-medium">Đã xuất bản</p>
+              <p className="text-3xl font-bold text-green-600 mt-2">
+                {stats.publishedBlogs}
+              </p>
+            </div>
+            <div className="text-5xl">✅</div>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            {Math.round((stats.publishedBlogs / (stats.totalBlogs || 1)) * 100)}% of total
+          </p>
+        </div>
+
+        {/* Draft Blogs */}
+        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-600">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-600 text-sm font-medium">Bản nháp</p>
+              <p className="text-3xl font-bold text-yellow-600 mt-2">
+                {stats.draftBlogs}
+              </p>
+            </div>
+            <div className="text-5xl">📝</div>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            {Math.round((stats.draftBlogs / (stats.totalBlogs || 1)) * 100)}% of total
+          </p>
+        </div>
+      </div>
+
+      {/* Categories Breakdown */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h2 className="text-xl font-bold text-gray-800 mb-4">Cấu trúc danh mục</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
+          {categories
+            .filter(
+              (cat) =>
+                !cat.parentId ||
+                cat.parentId === null ||
+                cat.parentId === "null"
+            )
+            .map((category) => {
+              const childCount = categories.filter(
+                (c) => c.parentId === category._id
+              ).length;
+              return (
                 <div
-                  key={activity.id}
-                  className="flex items-start gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                  key={category._id}
+                  className="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary-600 transition-colors"
                 >
-                  <div className="text-3xl">{getTypeIcon(activity.type)}</div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span
-                        className={`px-2 py-1 text-xs font-semibold rounded ${getActionColor(
-                          activity.action
-                        )}`}
-                      >
-                        {activity.action.toUpperCase()}
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold text-gray-800">
+                      {category.name}
+                    </h3>
+                    {childCount > 0 && (
+                      <span className="px-2 py-1 bg-primary-100 text-primary-700 text-xs font-semibold rounded">
+                        {childCount} con
                       </span>
-                      <span className="text-xs text-gray-500">
-                        by {activity.user}
-                      </span>
-                    </div>
-                    <p className="text-gray-800 font-medium">
-                      {activity.title}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {activity.time}
-                    </p>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">
+                    {category.description || "Không có mô tả"}
+                  </p>
+                  <div className="flex gap-2">
+                    <Link
+                      href={`/admin/information?parent=${category._id}`}
+                      className="text-xs px-3 py-1 bg-secondary-100 text-secondary-800 rounded hover:bg-secondary-200 transition-colors font-medium"
+                    >
+                      Chi tiết
+                    </Link>
                   </div>
                 </div>
-              ))}
-            </div>
-            <div className="mt-4 pt-4 border-t border-gray-200 text-center">
-              <Link
-                href="/admin/activity"
-                className="text-blue-600 hover:text-blue-800 text-sm font-semibold"
-              >
-                View All Activity →
-              </Link>
-            </div>
+              );
+            })}
+        </div>
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <Link
+            href="/admin/information"
+            className="inline-block px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-semibold transition-colors"
+          >
+            Quản lý tất cả danh mục
+          </Link>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">
+            Hành động nhanh
+          </h2>
+          <div className="space-y-3">
+            <Link
+              href="/admin/blogs/add"
+              className="block w-full px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-semibold text-center transition-colors"
+            >
+              ➕ Thêm bài viết mới
+            </Link>
+            <Link
+              href="/admin/information"
+              className="block w-full px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-semibold text-center transition-colors"
+            >
+              ➕ Thêm danh mục mới
+            </Link>
           </div>
         </div>
 
-        {/* System Status */}
-        <div className="mt-6 bg-white rounded-lg shadow-md p-6">
+        {/* System Info */}
+        <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-bold text-gray-800 mb-4">
-            System Status
+            Tình trạng hệ thống
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-              <div>
-                <p className="text-sm text-gray-600">API Status</p>
-                <p className="font-semibold text-gray-800">Operational</p>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span className="text-sm text-gray-700">API Status</span>
               </div>
+              <span className="text-xs font-semibold text-green-700">
+                Hoạt động
+              </span>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-              <div>
-                <p className="text-sm text-gray-600">Database</p>
-                <p className="font-semibold text-gray-800">Connected</p>
+            <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span className="text-sm text-gray-700">Database</span>
               </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-              <div>
-                <p className="text-sm text-gray-600">Storage</p>
-                <p className="font-semibold text-gray-800">Available (82%)</p>
-              </div>
+              <span className="text-xs font-semibold text-green-700">
+                Kết nối
+              </span>
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

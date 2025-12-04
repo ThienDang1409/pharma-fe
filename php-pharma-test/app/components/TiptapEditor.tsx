@@ -10,6 +10,8 @@ import { Table } from "@tiptap/extension-table";
 import { TableRow } from "@tiptap/extension-table-row";
 import { TableHeader } from "@tiptap/extension-table-header";
 import { TableCell } from "@tiptap/extension-table-cell";
+import TextAlign from "@tiptap/extension-text-align";
+import Link from "@tiptap/extension-link";
 import { useCallback, useState } from "react";
 import "./tiptap.css";
 
@@ -33,6 +35,9 @@ export default function TiptapEditor({
   const [selectedColor, setSelectedColor] = useState("#000000");
   const [selectedBgColor, setSelectedBgColor] = useState("#ffffff");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [showLinkDialog, setShowLinkDialog] = useState(false);
+  const [linkUrl, setLinkUrl] = useState("");
+  const [linkText, setLinkText] = useState("");
 
   const colors = [
     "#000000", // Black
@@ -66,6 +71,16 @@ export default function TiptapEditor({
       StarterKit,
       TextStyle,
       Color,
+      TextAlign.configure({
+        types: ['heading', 'paragraph', 'tableHeader', 'tableCell'],
+        alignments: ['left', 'center', 'right', 'justify'],
+      }),
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          class: 'text-primary-600 underline hover:text-primary-800 cursor-pointer',
+        },
+      }),
       Placeholder.configure({
         placeholder,
       }),
@@ -260,6 +275,56 @@ export default function TiptapEditor({
     input.click();
   }, [editor, onImageUpload]);
 
+  // Link handlers
+  const openLinkDialog = useCallback(() => {
+    const previousUrl = editor?.getAttributes('link').href || '';
+    const selectedText = editor?.state.doc.textBetween(
+      editor.state.selection.from,
+      editor.state.selection.to
+    ) || '';
+    
+    setLinkUrl(previousUrl);
+    setLinkText(selectedText);
+    setShowLinkDialog(true);
+  }, [editor]);
+
+  const setLink = useCallback(() => {
+    if (!editor) return;
+
+    if (!linkUrl) {
+      editor.chain().focus().unsetLink().run();
+      setShowLinkDialog(false);
+      return;
+    }
+
+    // If there's link text, insert it first
+    if (linkText && !editor.state.selection.empty === false) {
+      editor.chain().focus().insertContent(linkText).run();
+    }
+
+    // Add http:// if no protocol specified
+    const url = linkUrl.startsWith('http://') || linkUrl.startsWith('https://') 
+      ? linkUrl 
+      : `https://${linkUrl}`;
+
+    editor
+      .chain()
+      .focus()
+      .extendMarkRange('link')
+      .setLink({ href: url })
+      .run();
+
+    setShowLinkDialog(false);
+    setLinkUrl('');
+    setLinkText('');
+  }, [editor, linkUrl, linkText]);
+
+  const unsetLink = useCallback(() => {
+    if (editor) {
+      editor.chain().focus().unsetLink().run();
+    }
+  }, [editor]);
+
   const setColor = useCallback(
     (color: string) => {
       if (editor) {
@@ -429,6 +494,80 @@ export default function TiptapEditor({
         >
           Quote
         </button>
+        <div className="w-px bg-gray-300 mx-1"></div>
+        {/* Text Alignment */}
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().setTextAlign('left').run()}
+          className={`px-3 py-1.5 rounded hover:bg-blue-50 text-gray-700 border transition-colors ${
+            editor.isActive({ textAlign: 'left' })
+              ? "bg-blue-100 border-blue-300"
+              : "border-transparent"
+          }`}
+          title="Align Left"
+        >
+          ⬅
+        </button>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().setTextAlign('center').run()}
+          className={`px-3 py-1.5 rounded hover:bg-blue-50 text-gray-700 border transition-colors ${
+            editor.isActive({ textAlign: 'center' })
+              ? "bg-blue-100 border-blue-300"
+              : "border-transparent"
+          }`}
+          title="Align Center"
+        >
+          ↔
+        </button>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().setTextAlign('right').run()}
+          className={`px-3 py-1.5 rounded hover:bg-blue-50 text-gray-700 border transition-colors ${
+            editor.isActive({ textAlign: 'right' })
+              ? "bg-blue-100 border-blue-300"
+              : "border-transparent"
+          }`}
+          title="Align Right"
+        >
+          ➡
+        </button>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().setTextAlign('justify').run()}
+          className={`px-3 py-1.5 rounded hover:bg-blue-50 text-gray-700 border transition-colors ${
+            editor.isActive({ textAlign: 'justify' })
+              ? "bg-blue-100 border-blue-300"
+              : "border-transparent"
+          }`}
+          title="Justify"
+        >
+          ⬌
+        </button>
+        <div className="w-px bg-gray-300 mx-1"></div>
+        {/* Link Controls */}
+        <button
+          type="button"
+          onClick={openLinkDialog}
+          className={`px-3 py-1.5 rounded hover:bg-blue-50 text-gray-700 border transition-colors ${
+            editor.isActive("link")
+              ? "bg-blue-100 border-blue-300"
+              : "border-transparent"
+          }`}
+          title="Add/Edit Link"
+        >
+          🔗
+        </button>
+        {editor.isActive("link") && (
+          <button
+            type="button"
+            onClick={unsetLink}
+            className="px-3 py-1.5 rounded hover:bg-red-50 text-red-600 border border-transparent hover:border-red-300"
+            title="Remove Link"
+          >
+            ⛔
+          </button>
+        )}
         <div className="w-px bg-gray-300 mx-1"></div>
         {/* Text Color Picker */}
         <div className="relative">
@@ -837,6 +976,70 @@ export default function TiptapEditor({
             </button>
           </div>
         </>
+      )}
+
+      {/* Link Dialog */}
+      {showLinkDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">
+              {editor?.getAttributes('link').href ? 'Edit Link' : 'Add Link'}
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Link Text
+                </label>
+                <input
+                  type="text"
+                  value={linkText}
+                  onChange={(e) => setLinkText(e.target.value)}
+                  placeholder="Click here"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Leave blank to use selected text
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  URL
+                </label>
+                <input
+                  type="text"
+                  value={linkUrl}
+                  onChange={(e) => setLinkUrl(e.target.value)}
+                  placeholder="https://example.com"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2 mt-6">
+              <button
+                type="button"
+                onClick={setLink}
+                className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
+              >
+                {linkUrl ? 'Set Link' : 'Remove Link'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowLinkDialog(false);
+                  setLinkUrl('');
+                  setLinkText('');
+                }}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

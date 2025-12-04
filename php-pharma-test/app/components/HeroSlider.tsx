@@ -1,16 +1,27 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { useLanguage } from "@/app/context/LanguageContext";
+import enTranslations from "@/locales/en.json";
+import viTranslations from "@/locales/vi.json";
+
+const translations = {
+  en: enTranslations,
+  vi: viTranslations,
+};
 
 export default function HeroSlider() {
+  const { language } = useLanguage();
   const [currentSlide, setCurrentSlide] = useState(0);
+  const t = translations[language];
 
   const slides = [
     {
       title: "On/Offline Dissolution System:",
       subtitle: "Amazing Flexibility Yet",
       subtitle2: "Accurate Results either Way",
-      buttonText: "READ MORE",
+      buttonText: t.pages.readMore,
       image: "/dissolution-system.jpg",
     },
   ];
@@ -29,7 +40,7 @@ export default function HeroSlider() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
           {/* Left side - Text content */}
           <div className="flex-1 max-w-xl">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-700 mb-4">
               {slides[currentSlide].title}
             </h1>
             <h2 className="text-2xl md:text-3xl font-semibold text-gray-700 mb-2">
@@ -38,7 +49,7 @@ export default function HeroSlider() {
             <h2 className="text-2xl md:text-3xl font-semibold text-gray-700 mb-8">
               {slides[currentSlide].subtitle2}
             </h2>
-            <button className="bg-red-600 text-white px-8 py-3 rounded hover:bg-red-700 transition-colors font-semibold">
+            <button className="bg-primary-900 text-white px-8 py-3 rounded hover:bg-primary-800 transition-colors font-semibold">
               {slides[currentSlide].buttonText}
             </button>
           </div>
@@ -51,7 +62,7 @@ export default function HeroSlider() {
                 <div className="flex items-center gap-4">
                   {/* Main dissolution equipment */}
                   <div className="w-64 h-48 bg-white rounded-lg shadow-lg flex items-center justify-center">
-                    <div className="text-gray-400 text-center">
+                    <div className="text-gray-700 text-center">
                       <div className="text-6xl mb-2">⚗️</div>
                       <p className="text-sm">Dissolution System</p>
                     </div>
@@ -118,7 +129,7 @@ export default function HeroSlider() {
               key={index}
               onClick={() => setCurrentSlide(index)}
               className={`w-3 h-3 rounded-full transition-all ${
-                index === currentSlide ? "bg-red-600 w-8" : "bg-gray-400"
+                index === currentSlide ? "bg-primary" : "bg-gray-400"
               }`}
               aria-label={`Go to slide ${index + 1}`}
             />

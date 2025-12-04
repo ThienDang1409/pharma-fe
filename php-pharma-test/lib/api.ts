@@ -218,9 +218,10 @@ export interface Blog {
   slug: string;
   sections: BlogSection[];
   author: string;
-  informationId?: string;
+  informationId?: string | Information; // Can be string ID or populated Information object
   image?: string;
   tags?: string[];
+  isProduct?: boolean;
   status: "draft" | "published";
   createdAt?: string;
   updatedAt?: string;
@@ -244,6 +245,7 @@ export const blogApi = {
     limit?: number;
     status?: string;
     informationId?: string;
+    search?: string;
   }) => {
     return http.get<Blog[]>("/blog", { params });
   },
