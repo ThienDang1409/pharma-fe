@@ -58,11 +58,12 @@ export default function Header() {
       const currentScrollY = window.scrollY;
 
       if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // Scrolling down
-        setIsHeaderVisible(false);
-        setIsSearchOpen(false);
+        // Scrolling down - hide header unless search is open
+        if (!isSearchOpen) {
+          setIsHeaderVisible(false);
+        }
       } else {
-        // Scrolling up
+        // Scrolling up - always show header
         setIsHeaderVisible(true);
       }
 
@@ -71,24 +72,24 @@ export default function Header() {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
+  }, [lastScrollY, isSearchOpen]);
 
   const fetchCategories = async () => {
     try {
       const response = await informationApi.getAll();
-      console.log("Categories response:", response); // Debug log
       // Response is the array directly
       setCategories(Array.isArray(response) ? response : []);
     } catch (err) {
       console.error("Error fetching categories:", err);
+      setCategories([]);
     }
   };
 
   const fetchBlogsForCategory = async (categoryId: string) => {
-    // Check if already fetched
-    // if (categoryBlogs[categoryId]) {
-    //   return;
-    // }
+    // Skip if already fetched
+    if (categoryBlogs[categoryId]) {
+      return;
+    }
 
     try {
       // Use blogApi from lib/api.ts - response is Blog[] directly
@@ -115,9 +116,6 @@ export default function Header() {
   const rootCategories = categories.filter(
     (cat) => !cat.parentId || cat.parentId === null || cat.parentId === "null"
   );
-
-  console.log("Root categories:", rootCategories); // Debug log
-  console.log("All categories:", categories); // Debug log
 
   // Get children of a category
   const getChildren = (parentId: string) => {
