@@ -13,6 +13,7 @@ export default function AdminBlogsPage() {
   const [selectedCategoryPath, setSelectedCategoryPath] = useState<string[]>([]);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft">("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState({
     page: 1,
@@ -52,18 +53,18 @@ export default function AdminBlogsPage() {
       // Check if response has pagination
       const hasPagination = blogsResponse && typeof blogsResponse === 'object' && 'data' in blogsResponse;
       
+      let blogsData: Blog[] = [];
       if (hasPagination) {
         const paginatedResponse = blogsResponse as PaginatedResponse<Blog>;
-        setBlogs(paginatedResponse.data || []);
-        setFilteredBlogs(paginatedResponse.data || []);
+        blogsData = paginatedResponse.data || [];
         setPagination(paginatedResponse.pagination);
       } else {
         // Fallback for old API without pagination
-        const blogArray = blogsResponse as Blog[];
-        setBlogs(blogArray || []);
-        setFilteredBlogs(blogArray || []);
+        blogsData = blogsResponse as Blog[];
       }
       
+      setBlogs(blogsData);
+      applySearch(blogsData);
       setAllCategories(categoriesData || []);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -76,6 +77,26 @@ export default function AdminBlogsPage() {
     // Reset to page 1 when filters change
     setCurrentPage(1);
   }, [statusFilter, selectedCategoryPath]);
+
+  useEffect(() => {
+    // Apply search filter when search query changes
+    applySearch(blogs);
+  }, [searchQuery]);
+
+  const applySearch = (blogsData: Blog[]) => {
+    if (!searchQuery.trim()) {
+      setFilteredBlogs(blogsData);
+      return;
+    }
+
+    const query = searchQuery.toLowerCase();
+    const filtered = blogsData.filter(blog => 
+      blog.title?.toLowerCase().includes(query) ||
+      blog.title_en?.toLowerCase().includes(query) ||
+      blog.slug?.toLowerCase().includes(query)
+    );
+    setFilteredBlogs(filtered);
+  };
 
   const handleSelectCategory = (categoryId: string, level: number) => {
     const newPath = selectedCategoryPath.slice(0, level + 1);
@@ -149,7 +170,14 @@ export default function AdminBlogsPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Quản lý bài viết</h1>
-          <p className="text-gray-600 mt-1">Quản lý tất cả blog/news của website</p>
+          <p className="text-gray-600 mt-1">
+            Quản lý tất cả blog/news của website
+            {searchQuery && (
+              <span className="ml-2 px-2 py-1 bg-primary-100 text-primary-700 text-xs rounded-full font-semibold">
+                🔍 {filteredBlogs.length} kết quả
+              </span>
+            )}
+          </p>
         </div>
         <Link
           href="/admin/blogs/add"
@@ -157,6 +185,32 @@ export default function AdminBlogsPage() {
         >
           ➕ Thêm bài viết mới
         </Link>
+      </div>
+
+      {/* Search Box */}
+      <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
+        <div className="flex items-center gap-3">
+          <div className="shrink-0">
+            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder=" Tìm kiếm theo tiêu đề (VI/EN) hoặc slug..."
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all text-gray-900 placeholder-gray-500"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="shrink-0 px-3 py-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors font-semibold text-sm"
+            >
+              ✕ Xóa
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Status Filter */}
