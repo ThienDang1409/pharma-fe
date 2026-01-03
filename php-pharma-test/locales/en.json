@@ -77,8 +77,11 @@
   },
   "pages": {
     "category": "Category",
+    "categories": "Categories",
     "latestNews": "Latest News",
+    "products": "Products",
     "blog": "Blog",
+    "clearFilter": "Clear filter",
     "loadingLatestNews": "Loading latest news...",
     "loadingArticles": "Loading articles...",
     "readMore": "Read more",

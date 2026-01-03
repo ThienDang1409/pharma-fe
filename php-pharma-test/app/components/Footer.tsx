@@ -74,18 +74,18 @@ export default function Footer() {
 
   // Find specific main categories by name
   const productsCategory = mainCategories.find((cat) => 
-    cat.name.toLowerCase().includes("product")
+    (cat.name_en || "").toLowerCase().includes("product")
   );
   const servicesCategory = mainCategories.find((cat) => 
-    cat.name.toLowerCase().includes("service")
+    (cat.name_en || "").toLowerCase().includes("service")
   );
   const contactCategory = mainCategories.find((cat) => 
-    cat.name.toLowerCase().includes("contact")
+    (cat.name_en || "").toLowerCase().includes("contact")
   );
   const companyCategory = mainCategories.find((cat) => 
-    cat.name.toLowerCase().includes("company")
+    (cat.name_en || "").toLowerCase().includes("company")
   );
-
+  
   // Get level 1 children for each category
   const productsChildren = productsCategory ? getChildren(productsCategory._id) : [];
   const servicesChildren = servicesCategory ? getChildren(servicesCategory._id) : [];

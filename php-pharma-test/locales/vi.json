@@ -77,8 +77,11 @@
   },
   "pages": {
     "category": "Danh mục",
+    "categories": "Danh mục",
     "latestNews": "Tin tức mới nhất",
+    "products": "Sản phẩm",
     "blog": "Bài viết",
+    "clearFilter": "Xóa bộ lọc",
     "loadingLatestNews": "Đang tải tin tức mới nhất...",
     "loadingArticles": "Đang tải bài viết...",
     "readMore": "Đọc thêm",

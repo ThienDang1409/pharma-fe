@@ -300,7 +300,7 @@ export default function CategoryPage() {
         {/* Subcategories Filter Grid */}
         {subcategories.length > 0 && (
           <div className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Categories</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">{t.pages.categories}</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
               {subcategories.map((subcat) => {
                 const hasChildren = allCategories.some((cat) => cat.parentId === subcat._id);
@@ -351,7 +351,7 @@ export default function CategoryPage() {
                 }}
                 className="mt-4 text-sm text-primary-600 hover:text-primary-800 font-medium"
               >
-                ✕ Clear filter
+                ✕ {t.pages.clearFilter}
               </button>
             )}
           </div>
@@ -361,7 +361,7 @@ export default function CategoryPage() {
         <div>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900">
-              {isProductsCategory ? 'Products' : t.pages.latestNews}
+              {isProductsCategory ? t.pages.products : t.pages.latestNews}
               {selectedSubcategory && (
                 <span className="text-lg font-normal text-gray-600 ml-2">
                   ({products.length} items)

@@ -2,12 +2,12 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
 // API Base URL - change this to your backend URL
 const API_BASE_URL =
-  //process.env.NEXT_PUBLIC_API_URL || "https://pharma-test-be-1.onrender.com/api";
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+  process.env.NEXT_PUBLIC_API_URL || "https://pharma-test-be-1.onrender.com/api";
+  // process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 // Create axios instance with default config
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 30000, // Increased timeout for image uploads
   headers: {
     "Content-Type": "application/json",
   },
