@@ -11,12 +11,10 @@ export default function NewsDropdown({
 }: NewsDropdownProps) {
   return (
     <div
-      className="fixed left-0 right-0 top-[56px] z-50 pointer-events-auto"
+      className="fixed left-0 right-0 top-[56px] z-50"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      {/* Invisible bridge to prevent dropdown from closing */}
-      <div className="h-6 w-full pointer-events-auto"></div>
       <div className="bg-white border-t-4 border-red-700 shadow-xl">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 gap-8 p-8 max-w-md mx-auto">
