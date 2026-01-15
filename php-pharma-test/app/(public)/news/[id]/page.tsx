@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { blogApi } from "@/lib/api";
 import type { Blog } from "@/lib/api";
+import "@/app/components/blog-content.css";
 
 export default function NewsDetailPage() {
   const params = useParams();
@@ -123,7 +124,7 @@ export default function NewsDetailPage() {
               )}
 
               {/* Article Content */}
-              <div className="prose prose-lg max-w-none">
+              <div className="blog-content">
                 {blog.sections && blog.sections.length > 0 ? (
                   blog.sections.map((section, index) => (
                     <div key={index} className="mb-8">
@@ -133,7 +134,6 @@ export default function NewsDetailPage() {
                         </h2>
                       )}
                       <div
-                        className="text-gray-700 leading-relaxed whitespace-pre-wrap"
                         dangerouslySetInnerHTML={{ __html: section.content }}
                       />
                     </div>

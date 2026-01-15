@@ -398,8 +398,6 @@ export default function AdminEditBlogPage() {
           ? "Cập nhật và xuất bản thành công!"
           : "Cập nhật bản nháp thành công!"
       );
-
-      router.push("/admin");
     } catch (error: any) {
       console.error("Error updating blog:", error);
       const errorMessage =
